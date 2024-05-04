@@ -1,0 +1,696 @@
+
+Write
+
+Seetaramaiah Thopuri
+
+Member-only story
+DOCKER COMMANDS | Tutorial for Beginners
+
+headintheclouds
+Dev Genius
+headintheclouds
+·
+Follow
+Published in
+Dev Genius
+·
+16 min read
+·
+Nov 24, 2023
+115
+
+
+
+
+
+
+Developers have undergone a significant shift in their workflow with the advent of Docker. This platform has completely transformed how applications are developed, deployed, and run. Its unique containerisation technology has allowed developers to bundle their applications and dependencies into lightweight containers, which ensures consistency across different environments. Whether you are a seasoned Docker user or a novice, mastering the essential Docker commands is essential for efficient container management. In this guide, we will take you through key Docker commands with practical examples to help you become more proficient in managing containers.
+🚨Check out our latest video on Docker Commands!
+
+Images: The Foundation of Containers
+In the world of containerisation, Docker images act as templates for containers, housing all the essential components required for running an application. Efficient management of containerised applications must have a good grasp of the image-related commands.
+
+Pull Image
+docker pull ubuntu:20.04
+20.04: Pulling from library/ubuntu
+915eebb74587: Pull complete 
+Digest: sha256:ed4a42283d9943135ed87d4ee34e542f7f5ad9ecf2f244870e23122f703f91c2
+Status: Downloaded newer image for ubuntu:20.04
+docker.io/library/ubuntu:20.04
+Pulling an image from Docker Hub or a registry requires specifying the image name and tag to ensure you get the desired version.
+List Images
+docker images
+REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
+ubuntu       20.04     0341906bdafc   7 weeks ago   65.7MB # The Image we just pulled
+This command provides a list of all locally available Docker images along with details such as repository, tag, and image ID.
+Build Image
+
+Let’s create a simple Python web application using Flask and build a Docker image for it:
+Step 1 — Create a Python Application: Create a file named app.py for your Flask application.
+# app.py
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    return 'Hello headintheclouds, this is Docker with Python!'
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0')
+Step 2 — Create a Requirements File: Create a file named requirements.txt to specify the dependencies. Make sure you are in the same directory before running the following command:
+pip freeze > requirements.txt
+# requirements.txt 
+blinker==1.7.0
+cffi==1.15.1
+click==8.1.7
+docutils==0.20.1
+Flask==3.0.0
+itsdangerous==2.1.2
+Jinja2==3.1.2
+MarkupSafe==2.1.3
+pycparser==2.21
+PyYAML==6.0
+six==1.16.0
+Werkzeug==3.0.1
+Step 3 — Create Dockerfile: Save the following Dockerfile in the same directory as your Python application files.
+# Use an official Python runtime as a parent image
+FROM python:3.9
+
+# Set the working directory in the container
+WORKDIR /usr/src/app
+
+# Copy the requirements file into the container at /usr/src/app
+COPY requirements.txt ./
+
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the current directory contents into the container at /usr/src/app
+COPY . .
+
+# Expose the port on which the app will run
+EXPOSE 5000
+
+# Define the command to run your application
+CMD ["python", "app.py"]
+Step 4 — Build Docker Image: Open a terminal, navigate to the directory containing your Dockerfile and application files, and run the following command:
+docker build -t hitc-python-app:1.0 .
+[+] Building 76.3s (11/11) FINISHED                                                                                                                          docker:desktop-linux
+ => [internal] load build definition from Dockerfile                                                                                                                         0.0s
+ => => transferring dockerfile: 585B                                                                                                                                         0.0s
+ => [internal] load .dockerignore                                                                                                                                            0.0s
+ => => transferring context: 2B                                                                                                                                              0.0s
+ => [internal] load metadata for docker.io/library/python:3.9                                                                                                                2.2s
+ => [auth] library/python:pull token for registry-1.docker.io                                                                                                                0.0s
+ => [1/5] FROM docker.io/library/python:3.9@sha256:f2f14d6dabcbc113512050906474d44cdb2a1139fa26d9b05bef0eedb36ac94a                                                         69.7s
+...
+ => [2/5] WORKDIR /usr/src/app                                                                                                                                               0.5s
+ => [3/5] COPY requirements.txt ./                                                                                                                                           0.0s
+ => [4/5] RUN pip install --no-cache-dir -r requirements.txt                                                                                                                 3.8s
+ => [5/5] COPY . .                                                                                                                                                           0.0s
+ => exporting to image                                                                                                                                                       0.1s
+ => => exporting layers                                                                                                                                                      0.1s
+ => => writing image sha256:e307b642fd6838249ff8d47a8cb14d5d4117500698cc4ee84c58541cfa7825b6                                                                                 0.0s
+ => => naming to docker.io/library/hitc-python-app:1.0   
+This command builds an image named hitc-python-app with the tag 1.0.
+Step 6 — Verify Image Build: After a successful build, you can verify that the image is created by running:
+docker images
+REPOSITORY        TAG       IMAGE ID       CREATED              SIZE
+hitc-python-app   1.0       e307b642fd68   About a minute ago   1.02GB
+ubuntu            20.04     0341906bdafc   7 weeks ago          65.7MB
+You should see hitc-python-app with the 1.0 tag in the list.
+Step 7 — Run Docker Container: Now, you can run a container using the built image:
+docker run -p 5000:5000 hitc-python-app:1.0
+Step 8 — Visit: http://localhost:5000 in your browser, and you should see “Hello, Docker with Python!”
+
+After following these steps, you have successfully built a Docker image for a simple Python Flask application. This image packages your Python application and its dependencies, making it easy to distribute and run consistently across various environments.
+Remove Image
+
+Image Credits: Vpsie
+# Error encountered because the image is still in use by a container
+docker rmi hitc-python-app:1.0
+Error response from daemon: conflict: unable to remove repository reference "hitc-python-app:1.0" (must force) - container 9074ab023721 is using its referenced image e307b642fd68
+
+# List all containers (including stopped)
+docker ps -a
+CONTAINER ID   IMAGE                 COMMAND                  CREATED          STATUS                          PORTS     NAMES
+9074ab023721   hitc-python-app:1.0   "python app.py"          2 minutes ago    Exited (0) About a minute ago             charming_almeida
+
+# Remove the container using the Container ID
+docker rm -f 9074ab023721
+9074ab023721
+
+# Successfully completed
+docker rmi hitc-python-app:1.0
+Untagged: hitc-python-app:1.0
+Deleted: sha256:e307b642fd6838249ff8d47a8cb14d5d4117500698cc4ee84c58541cfa7825b6
+
+# No longer listed
+docker images
+REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
+ubuntu       20.04     0341906bdafc   7 weeks ago   65.7MB
+Removing an image helps clean up disk space. As per the example above, ensure no running containers depend on the image before deletion.
+Containers: Running and Managing Applications
+Containers are self-contained execution environments built from Docker images. They package applications and their dependencies, ensuring portability across different platforms. Effective management of containers is crucial for streamlined deployment of applications, as it allows for easy scaling, updating, and monitoring of individual components.
+Run Container
+Let’s begin by recreating our hitc-python-app docker image, which was previously cached.
+docker build -t hitc-python-app:1.0 .
+[+] Building 2.1s (11/11) FINISHED      
+...
+ => CACHED [2/5] WORKDIR /usr/src/app                                                                                                                                        0.0s
+ => CACHED [3/5] COPY requirements.txt ./                                                                                                                                    0.0s
+ => CACHED [4/5] RUN pip install --no-cache-dir -r requirements.txt                                                                                                          0.0s
+ => CACHED [5/5] COPY . .                                                                                                                                                    0.0s
+ => exporting to image                                                                                                                                                       0.0s
+ => => exporting layers                                                                                                                                                      0.0s
+ => => writing image sha256:e307b642fd6838249ff8d47a8cb14d5d4117500698cc4ee84c58541cfa7825b6                                                                                 0.0s
+ => => naming to docker.io/library/hitc-python-app:1.0                                                                                                                        docker:desktop-linux
+
+docker images
+REPOSITORY        TAG       IMAGE ID       CREATED          SIZE
+hitc-python-app   1.0       e307b642fd68   13 minutes ago   1.02GB
+Running a container involves specifying options like detached mode (-d), port mapping, assigning a name, and specifying the image.
+docker run -d -p 5000:5000 --name hitc-python-app hitc-python-app:1.0
+ae25ef0178bd2bbb393e7ede0d3610bd15e6ab282b8fb4d9348972a4b825871b
+
+# Execute curl inside the running container and fetch the response from the endpoint 
+docker exec -it ae25ef0178bd curl http://localhost:5000/
+Hello headintheclouds, this is Docker with Python!
+List Running Containers
+docker ps
+CONTAINER ID   IMAGE                 COMMAND           CREATED          STATUS          PORTS                            NAMES
+ae25ef0178bd   hitc-python-app:1.0   "python app.py"   3 seconds ago   Up 2 seconds   0.0.0.0:5000->5000/tcp   hitc-python-app
+This command provides a snapshot of currently running containers, displaying their container IDs, names, and other details.
+List All Containers
+docker ps -a
+CONTAINER ID   IMAGE                 COMMAND                  CREATED          STATUS                      PORTS                            NAMES
+ae25ef0178bd   hitc-python-app:1.0   "python app.py"   23 seconds ago   Up 22 seconds   0.0.0.0:5000->5000/tcp   hitc-python-app
+To view all containers, including those that have exited or stopped, use the -a flag.
+Stop Container
+docker stop hitc-python-app
+hitc-python-app
+Gracefully stops a running container, allowing it to clean up and exit.
+Remove Container
+# Remove the container 
+docker rm hitc-python-app
+hitc-python-app
+
+# Check running containers
+docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+Removing a container frees up resources. Ensure it’s stopped before removal.
+Networking: Connecting Containers
+In a Docker environment, networks play a crucial role in facilitating seamless communication between containers. Being well-versed in networking commands is essential for creating highly scalable and interconnected applications that can effectively meet the demands of modern computing.
+
+Image Credits: techmormo.com
+List Networks
+docker network ls
+NETWORK ID     NAME       DRIVER    SCOPE
+9f9374ce5270   bridge     bridge    local
+7d2374eda0f9   host       host      local
+88876ce6419d   minikube   bridge    local
+2203860a4946   none       null      local
+In a Docker environment, containers need to communicate with one another to form a complete application. Docker networks facilitate this communication by acting as a bridge between containers. You can easily view all the available networks by using this simple command.
+Create Network
+docker network create hitc-demo-network
+23d83a9ba578067e46cb10009d200009fba26699e2b53a7ec15cea0fd09966cb
+
+docker network ls                      
+NETWORK ID     NAME                DRIVER    SCOPE
+9f9374ce5270   bridge              bridge    local
+23d83a9ba578   hitc-demo-network   bridge    local
+7d2374eda0f9   host                host      local
+88876ce6419d   minikube            bridge    local
+2203860a4946   none                null      local
+Creates a user-defined bridge network for containers to communicate. A user-defined bridge network is a network that allows containers to communicate with each other. It acts as a virtual switch connecting the different containers running on the same host. This bridge network can be created and customised by the user according to their requirements. It enables seamless and secure communication between containers and helps in the development of complex applications.
+Connect Container to Network
+
+
+# Check hitc-python-app image is there
+docker images
+REPOSITORY        TAG       IMAGE ID       CREATED          SIZE
+hitc-python-app   1.0       e307b642fd68   30 minutes ago   1.02GB
+nginx             latest    5628e5ea3c17   3 days ago       192MB
+ubuntu            20.04     0341906bdafc   7 weeks ago      65.7MB
+
+# If not 
+docker build -t hitc-python-app:1.0 . 
+
+# Run Docker container
+docker run -d -p 5000:5000 --name hitc-python-app hitc-python-app:1.0
+cd8a96ddd34ebf0c56a2c6e2002b7810dd5af48dbde15e3b3fe1149c7f90ecc1
+
+# Connect previously created docker network with the container
+docker network connect hitc-demo-network hitc-python-app
+
+# Check that the container is linked to hitc-demo-network with this command
+docker container inspect cd8a96ddd34e | grep -A 20 "Networks" | awk '/\"bridge\"/ {p=1; print; next} p && /^}/ {p=0} p'
+
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "NetworkID": "9f9374ce5270062fea0b14d5441627b1ce8a4fc41e30ab8b482bd9ebf2d37586",
+                    "EndpointID": "8bc77f91573e01fe9faadd1ad0ed255c16209c016aeaa2e3025c24be428cea39",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.2",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:11:00:02",
+                    "DriverOpts": null
+                },
+                "hitc-demo-network": {
+                    "IPAMConfig": {},
+                    "Links": null,
+                    "Aliases": [
+                        "cd8a96ddd34e"
+By connecting a container to a designated network, it enables the container to establish communication with other containers or devices within the same network.
+Volumes: Persistent Data Storage
+Stateful applications require a reliable method of storing data in order to maintain their state. Docker volumes serve as an essential tool for achieving persistent data storage, ensuring that critical data is preserved and easily accessible when needed.
+
+Create Volume
+docker volume create hitc-data-demo
+hitc-data-demo
+
+docker volume ls                   
+DRIVER    VOLUME NAME
+local     hitc-data-demo
+local     minikube
+Volumes are a crucial component of containerisation that provide persistent storage. By creating a volume, you can store and share data between containers, ensuring that your data remains available even if a container is destroyed or recreated. Volumes can be used to manage data that needs to persist beyond the lifetime of a container, making them a valuable tool for managing stateful applications.
+Run Container with Volume
+docker run -d -p 5000:5000 --name hitc-python-app -v hitc-data-demo:/app/data hitc-python-a:1.0
+335b73ee79f1e9daa0b99aa4ff3dd4ff62c02b18dbae39944c799bdff09d7406
+By attaching a volume to a container, you can ensure that the data stored within the container persists beyond the lifespan of the container. This allows for greater flexibility and reliability in managing and accessing the data, as it can be easily transferred between containers and systems as needed.
+To check the current linkage status between the volume named hitc-data-demo and the hitc-python-app container, you can try utilising docker inspect in combination with jq, a JSON parsing tool that provides better output formatting. To demonstrate, here is a sample command:
+docker inspect -f '{{json .Mounts}}' hitc-python-app | jq '.[] | select(.Name == "hitc-data-demo")'
+{
+  "Type": "volume",
+  "Name": "hitc-data-demo",
+  "Source": "/var/lib/docker/volumes/hitc-data-demo/_data",
+  "Destination": "/app/data",
+  "Driver": "local",
+  "Mode": "rw",
+  "RW": true,
+  "Propagation": ""
+}
+If you don’t have jq installed, you can install it using your system's package manager or follow the installation instructions on the official jq website.
+To write to the volume attached to the hitc-python-app container, you can use a simple approach of running a shell inside the container and creating or modifying files within the mounted volume. Here's an example:
+# Start a shell inside the container
+docker exec -it hitc-python-app /bin/bash
+
+# Now, you are inside the container. You can navigate to the mounted volume and create/modify files.
+cd /app/data
+
+# Create a new file
+echo "Hello, this is a test file" > test.txt
+
+# Check what is inside the file
+cat test.txt 
+Hello, this is a test file
+
+# Exit the container shell
+exit
+Once you have executed the given commands successfully, you can locate a file named test.txt within the mounted volume. This indicates that you can both read from and write to the volume from within the container. This serves as a practical demonstration of the volume’s functionality.
+To verify that the file has been saved to the volume, you can use the docker exec command to check the file’s contents within the container. Here's how you can do it:
+# Start a shell inside the container
+docker exec -it hitc-python-app /bin/bash
+
+# Navigate to the mounted volume
+cd /app/data
+
+# View the contents of the file
+cat test.txt
+Hello, this is a test file
+5. Logs: Monitoring Container Output
+
+One of the most crucial aspects of application development is keeping track of the logs generated by containers. Analysing the container logs is not only vital for debugging purposes but also helps in gaining insights into the runtime behaviour of your applications.
+View Container Logs
+docker logs hitc-python-app
+ * Serving Flask app 'app'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.17.0.2:5000
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 731-856-244
+192.168.65.1 - - [24/Nov/2023 16:22:02] "GET / HTTP/1.1" 200 -
+192.168.65.1 - - [24/Nov/2023 16:22:03] "GET / HTTP/1.1" 200 -
+192.168.65.1 - - [24/Nov/2023 16:22:04] "GET / HTTP/1.1" 200 -
+One of the useful features of Docker is the ability to view the logs of a container, whether it’s currently running or has stopped. This functionality provides valuable insight into the container’s behavior and facilitates troubleshooting of any issues that may arise.
+Streaming Real-time Logs
+You can stream real-time logs from a running container using the -f or --follow option. This allows you to see new log entries as they are generated.
+docker logs -f hitc-python-app
+ * Serving Flask app 'app'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.17.0.2:5000
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 731-856-244
+192.168.65.1 - - [24/Nov/2023 16:22:02] "GET / HTTP/1.1" 200 -
+192.168.65.1 - - [24/Nov/2023 16:22:03] "GET / HTTP/1.1" 200 -
+192.168.65.1 - - [24/Nov/2023 16:22:04] "GET / HTTP/1.1" 200 -
+Viewing Logs for a Specific Time Range
+Docker provides a convenient way to filter logs based on time. By utilising the — since option, you can easily view logs from a specific time frame. For instance, you can retrieve logs generated within the last 10 minutes by specifying the appropriate time duration.
+docker logs --since 10m hitc-python-app
+192.168.65.1 - - [24/Nov/2023 16:22:02] "GET / HTTP/1.1" 200 -
+192.168.65.1 - - [24/Nov/2023 16:22:03] "GET / HTTP/1.1" 200 -
+192.168.65.1 - - [24/Nov/2023 16:22:04] "GET / HTTP/1.1" 200 -
+Showing Timestamps
+When dealing with logs, it can be crucial to know when certain events took place. One way to achieve this is by including timestamps in the log output. By making use of the — timestamps or -t option, you can enable the display of timestamps alongside log entries, making it easier to track and analyse the sequence of events.
+docker logs -t hitc-python-app 
+2023-11-24T16:16:04.582376138Z  * Serving Flask app 'app'
+2023-11-24T16:16:04.582422513Z  * Debug mode: on
+2023-11-24T16:16:04.586499722Z WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+2023-11-24T16:16:04.586512805Z  * Running on all addresses (0.0.0.0)
+2023-11-24T16:16:04.586514722Z  * Running on http://127.0.0.1:5000
+2023-11-24T16:16:04.586516555Z  * Running on http://172.17.0.2:5000
+2023-11-24T16:16:04.586518222Z Press CTRL+C to quit
+2023-11-24T16:16:04.586747972Z  * Restarting with stat
+2023-11-24T16:16:04.664490972Z  * Debugger is active!
+2023-11-24T16:16:04.664761597Z  * Debugger PIN: 731-856-244
+2023-11-24T16:22:02.458803387Z 192.168.65.1 - - [24/Nov/2023 16:22:02] "GET / HTTP/1.1" 200 -
+2023-11-24T16:22:03.626832971Z 192.168.65.1 - - [24/Nov/2023 16:22:03] "GET / HTTP/1.1" 200 -
+2023-11-24T16:22:04.641062305Z 192.168.65.1 - - [24/Nov/2023 16:22:04] "GET / HTTP/1.1" 200 -
+Filtering Logs by Log Level
+Docker logs provide the ability to categorise logs based on their severity level. These levels include debug, info, warn, and error, allowing you to easily filter and identify issues within your system.
+docker logs --details --since 10m --until 5m hitc-python-app
+ 192.168.65.1 - - [24/Nov/2023 16:22:02] "GET / HTTP/1.1" 200 -
+ 192.168.65.1 - - [24/Nov/2023 16:22:03] "GET / HTTP/1.1" 200 -
+ 192.168.65.1 - - [24/Nov/2023 16:22:04] "GET / HTTP/1.1" 200 -
+Exporting Logs to a File
+Docker provides the capability to redirect its logs to a file which can be used to perform more detailed analysis or auditing tasks. This feature is particularly useful for troubleshooting, monitoring and improving the overall performance of Docker containers.
+docker logs <container_id or container_name> > output.log
+Combining Multiple Containers’ Logs
+When dealing with multiple containers defined in a docker-compose.yml file, you can make use of the docker-compose logs feature to easily aggregate logs from all the containers. This can be particularly useful when troubleshooting issues across multiple containers.
+docker-compose logs
+Exec: Run Commands in a Running Container
+
+One of the most useful features of a running container is the ability to execute commands within it. This capability provides a powerful tool for troubleshooting and exploring the internal workings of the container, allowing for effective diagnosis and resolution of issues.
+Execute Command in Container
+docker exec -it hitc-python-app bash
+root@335b73ee79f1:/usr/src/app# 
+With the interactive execution of a command in a running container, you can easily debug and inspect the container’s internal processes. This feature is especially useful for troubleshooting and gaining insights into how the container operates.
+Execute a Single Command
+Execute a specific command within a container that is already running, without the need to open an interactive shell.
+docker exec hitc-python-app ls /app                 
+data
+Copy Files Between Host and Container
+To transfer files between your computer and a running container, you can use the docker cp command in combination with docker exec. This will allow you to copy files from your host machine to the container or vice versa.
+# Create a file on your local machine
+touch localfile.txt
+
+docker cp localfile.txt hitc-python-app:/app
+Successfully copied 1.54kB to hitc-python-app:/app
+Attach to a Running Process
+To debug a process that is already running within a container, you can attach to it using the appropriate tool or method. This allows you to closely monitor and troubleshoot any issues that may arise during the execution of the process.
+docker exec -it hitc-python-app ps aux
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.3  36288 28324 ?        Ss   16:16   0:00 python app.py
+root         7  0.3  0.3 256540 31128 ?        Sl   16:16   0:05 /usr/local/bin/python /usr/src/app/app.py
+root        39 50.0  0.0   8584  3968 pts/0    Rs+  16:40   0:00 ps aux
+
+# Check our previously copied file from local machine to the container
+docker exec -it hitc-python-app ls -lah /app
+total 12K
+drwxr-xr-x 3 root root    4.0K Nov 24 16:39 .
+drwxr-xr-x 1 root root    4.0K Nov 24 16:39 ..
+drwxr-xr-x 2 root root    4.0K Nov 24 16:22 data
+-rw-r----- 1  501 dialout    0 Nov 24 16:39 localfile.txt
+Install Software Packages
+Install additional software or packages within a running container.
+docker exec -it hitc-python-app apt-get install -y curl
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+curl is already the newest version (7.88.1-10+deb12u4).
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Run Database Queries
+Easily access and manipulate databases by executing custom queries through a command-line interface.
+docker exec -it <database_container_id or container_name> mysql -u <username> -p<password> -e "SELECT * FROM table_name;"
+Limit Resource Usage
+Within a container, specify the limitations on resource usage, such as CPU or memory, for the execution of a particular command.
+docker update --cpus 0.5 hitc-python-app
+hitc-python-app
+
+docker update --memory 512m --memory-swap 512m hitc-python-app
+hitc-python-app
+Manage Environment Variables
+Set environment variables for a specific command execution.
+docker exec -e VAR_NAME=value <container_id or container_name> command
+By utilising the docker exec commands, you can easily and efficiently perform many tasks within a Docker container that is actively running. This makes it an incredibly versatile tool for containerised development and operational purposes, allowing you to streamline your workflows and improve overall efficiency.
+Cleaning Up: Managing Resources
+Efficiently managing Docker resources ensures a clean and optimised development environment.
+
+Remove All Containers
+docker rm -f $(docker ps -a -q)
+335b73ee79f1
+
+docker ps -a
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+This command efficiently removes all stopped containers.
+Remove All Images
+docker rmi $(docker images -q)
+docker rmi $(docker images -q)
+Untagged: hitc-python-app:1.0
+Deleted: sha256:e307b642fd6838249ff8d47a8cb14d5d4117500698cc4ee84c58541cfa7825b6
+Untagged: nginx:latest
+Untagged: nginx@sha256:10d1f5b58f74683ad34eb29287e07dab1e90f10af243f151bb50aa5dbb4d62ee
+Deleted: sha256:5628e5ea3c17fa1cbf49692edf41d5a1cdf198922898e6ffb29c19768dca8fd3
+Deleted: sha256:8f1fb6beede08fb4a18c39ee11cbf17041aaac801df60fafb76eb37ccc0c0100
+Deleted: sha256:1b25807e02568269bd07bd4caa5245ba2ee07eea3b36a837409f1ba9b6549df7
+Deleted: sha256:0fc7f2336aa0bc06b2a8a29f8c12f157df16c142b9abebbb77ec0d503cb7436a
+Deleted: sha256:d553b57cbbd35866c901f7cbc1cb616de23d34f402d0a7b0d311053a363403a0
+Deleted: sha256:9485a8ac3c511fecdf1b5b2fe341292ecadf5584c65070a2c44ce4a26df5624f
+Deleted: sha256:ad1b010103299f60fdf8c6b2ce029bb03e51c9e60af85db992b62b0f051c579d
+Deleted: sha256:f4e4d9391e1332a5b50063a92ccc434b92fccd14962fd9c37711d864d587d98a
+Untagged: ubuntu:20.04
+Untagged: ubuntu@sha256:ed4a42283d9943135ed87d4ee34e542f7f5ad9ecf2f244870e23122f703f91c2
+Deleted: sha256:0341906bdafc976cd73b05ea0e3df2e4884c6b6816197a2ffbd2367061c19acf
+Deleted: sha256:701ccb11c0525a289459678e1ef3e9269b62737fafb033db91061ae53a0e9c1e
+
+docker images
+REPOSITORY   TAG       IMAGE ID   CREATED   SIZE
+Deletes all Docker images. Use with caution, as it permanently removes images.
+Remove All Volumes
+docker volume rm $(docker volume ls -q)
+hitc-data-demo
+minikube
+
+docker volume ls                       
+DRIVER    VOLUME NAME
+Before deleting Docker volumes, it’s important to check that no containers are currently using them. This will prevent any unintended removal of essential data. So, always verify that none of the volumes are being used before proceeding with the deletion.
+Closing Thoughts
+
+Thank you for joining us on this journey through the Docker Commands Odyssey! As a containerisation tool, Docker provides an extensive range of commands that can significantly streamline your workflow. By mastering these commands, you can leverage Docker’s full potential for efficient application deployment and management. This guide serves as a starting point, but as you delve deeper into Docker, you’ll uncover more advanced techniques that can help you optimise your containerisation process.
+Join our Discord community and connect with fellow Docker enthusiasts. Follow us on Instagram to stay tuned to ongoing discussions, gain insights, and discover best practices for smooth sailing in the Docker ecosystem.
+To get more detailed insights, tutorials, and exciting discoveries, subscribe to our ➡️YouTube channel ⬅️
+headintheclouds
+Share your videos with friends, family, and the world
+www.youtube.com
+Take the time to experiment with different scenarios and build your expertise, empowering you to create, deploy, and manage applications with ease. Happy containerising! 🐳
+Docker
+Kubernetes
+DevOps
+Development
+Programming
+115
+
+
+
+
+headintheclouds
+Dev Genius
+Written by headintheclouds
+1.2K Followers
+·
+Writer for 
+Dev Genius
+DevOps | Web Dev | All Things Tech | Discord: discord.gg/qNTrsacBp8 | YT: www.youtube.com/@headintheclouds.online | IG: @headintheclouds.online
+Follow
+
+More from headintheclouds and Dev Genius
+DOCKER COMPOSE | Complete Guide with Hands-On Examples
+headintheclouds
+headintheclouds
+in
+Dev Genius
+DOCKER COMPOSE | Complete Guide with Hands-On Examples
+Welcome back to our page! Today, we’re going to talk about Docker Compose, a powerful tool that helps you define and run multi-container…
+
+·
+9 min read
+·
+Mar 25, 2024
+88
+1
+
+
+Java 8 Coding and Programming Interview Questions and Answers
+Anusha SP
+Anusha SP
+in
+Dev Genius
+Java 8 Coding and Programming Interview Questions and Answers
+It has been 8 years since Java 8 was released. I have already shared the Java 8 Interview Questions and Answers and also Java 8 Stream API…
+6 min read
+·
+Jan 31, 2023
+890
+11
+
+
+Implementing Authentication with Spring Boot Security 6, OAuth2, and Angular 17 via Multiple…
+Ani Talakhadze
+Ani Talakhadze
+in
+Dev Genius
+Implementing Authentication with Spring Boot Security 6, OAuth2, and Angular 17 via Multiple…
+Part 1 — Setting Up Backend Project and Configurations for Multi-Provider Authentication
+14 min read
+·
+Mar 30, 2024
+90
+1
+
+
+DOCKER COMPOSE with variables | Build a CRUD Flask API with PostgreSQL
+headintheclouds
+headintheclouds
+in
+Dev Genius
+DOCKER COMPOSE with variables | Build a CRUD Flask API with PostgreSQL
+Hello everyone, and welcome back to our series of Docker tutorials. In this blog, we will discuss Docker Compose and how we can use…
+
+·
+7 min read
+·
+Apr 15, 2024
+97
+
+
+See all from headintheclouds
+See all from Dev Genius
+Recommended from Medium
+Best Kubernetes Logging and Monitoring Tools
+Sushant Kapare
+Sushant Kapare
+Best Kubernetes Logging and Monitoring Tools
+logging and monitoring are critical components, serving as the eyes and ears for developers and operators managing these complex systems…
+14 min read
+·
+Apr 25, 2024
+9
+
+
+DOCKER | Image Size & Container Security
+headintheclouds
+headintheclouds
+in
+Dev Genius
+DOCKER | Image Size & Container Security
+Welcome to our latest blog post on Docker! Here, we will explore the best practices for Docker image size and container security. Docker…
+
+·
+6 min read
+·
+Apr 24, 2024
+72
+
+
+Lists
+
+
+
+General Coding Knowledge
+20 stories
+·
+1184 saves
+
+
+
+Coding & Development
+11 stories
+·
+591 saves
+
+
+Stories to Help You Grow as a Software Developer
+19 stories
+·
+1027 saves
+
+AI-generated image of a cute tiny robot in the backdrop of ChatGPT’s logo
+
+ChatGPT
+21 stories
+·
+612 saves
+Docker Deep Dive
+Syedalioffcl
+Syedalioffcl
+Docker Deep Dive
+Let’s take a moment to explore what makes Docker such a powerful tool without getting bogged down in the basics. Today, we’re peeling back…
+17 min read
+·
+Mar 24, 2024
+68
+
+
+How to run docker commands without sudo
+Andrey Byhalenko
+Andrey Byhalenko
+in
+DevOps Manuals and Technical Notes
+How to run docker commands without sudo
+In this article, I will use Ubuntu 22.04 to show you how to run Docker commands without sudo, but the process is the same in most Linux…
+2 min read
+·
+Jan 6, 2024
+4
+
+
+Helm — Your Compass in the Kubernetes Universe
+Sagar #OpenToWork
+Sagar #OpenToWork
+in
+FAUN — Developer Community 🐾
+Helm — Your Compass in the Kubernetes Universe
+Helm is a package manager for Kubernetes for easy application management.
+6 min read
+·
+3 days ago
+10
+2
+
+
+Real-life proven strategies to reduce docker image size
+Shristi
+Shristi
+Real-life proven strategies to reduce docker image size
+Reducing the size of Docker images is crucial for optimizing resource usage, improving deployment times, and enhancing security.
+2 min read
+·
+Nov 10, 2023
+
+
+See more recommendations
+Help
+Status
+About
+Careers
+Blog
+Privacy
+Terms
+Text to speech
+Teams
+16
