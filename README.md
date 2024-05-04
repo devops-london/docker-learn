@@ -1,3 +1,6 @@
+docker commands follow below medium
+https://medium.com/dev-genius/docker-commands-in-a-nutshell-boost-your-container-efficiency-ae61f5f4c95a
+
 # Quickstart: Compose and WordPress
 
 You can use Docker Compose to easily run WordPress in an isolated environment
